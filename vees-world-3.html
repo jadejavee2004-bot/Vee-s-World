@@ -1,0 +1,480 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover"/>
+<meta name="apple-mobile-web-app-capable" content="yes"/>
+<meta name="apple-mobile-web-app-status-bar-style" content="default"/>
+<meta name="apple-mobile-web-app-title" content="Vee's World"/>
+<meta name="theme-color" content="#f0e8ff"/>
+<meta name="mobile-web-app-capable" content="yes"/>
+<meta name="application-name" content="Vee's World"/>
+<title>Vee's World 🪼</title>
+<script>
+// Inline PWA manifest injected as blob so Chrome recognises it as installable
+(function(){
+  const manifest = {
+    name: "Vee's World",
+    short_name: "Vee's World",
+    description: "Your private universe 🪼",
+    start_url: "./",
+    display: "standalone",
+    background_color: "#f0e8ff",
+    theme_color: "#f0e8ff",
+    orientation: "portrait",
+    icons: [
+      {
+        src: "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 512 512'%3E%3Crect width='512' height='512' rx='100' fill='%23c4aaff'/%3E%3Cellipse cx='256' cy='210' rx='160' ry='135' fill='%23d9c6ff'/%3E%3Cellipse cx='256' cy='195' rx='110' ry='86' fill='%23ede0ff'/%3E%3Cellipse cx='210' cy='170' rx='32' ry='20' fill='white' opacity='.5'/%3E%3Cpath d='M160 330 Q140 390 155 440 Q165 470 160 500' stroke='%23c4aaff' stroke-width='10' stroke-linecap='round' fill='none'/%3E%3Cpath d='M210 340 Q195 400 205 450 Q210 475 208 510' stroke='%23c4aaff' stroke-width='10' stroke-linecap='round' fill='none'/%3E%3Cpath d='M256 345 Q248 405 255 455 Q258 478 256 512' stroke='%23c4aaff' stroke-width='10' stroke-linecap='round' fill='none'/%3E%3Cpath d='M302 340 Q310 400 305 450 Q302 475 304 510' stroke='%23c4aaff' stroke-width='10' stroke-linecap='round' fill='none'/%3E%3Cpath d='M352 330 Q368 390 357 440 Q350 470 352 500' stroke='%23c4aaff' stroke-width='10' stroke-linecap='round' fill='none'/%3E%3C/svg%3E",
+        sizes: "512x512",
+        type: "image/svg+xml",
+        purpose: "any maskable"
+      }
+    ]
+  };
+  const blob = new Blob([JSON.stringify(manifest)], {type: 'application/json'});
+  const url = URL.createObjectURL(blob);
+  const link = document.createElement('link');
+  link.rel = 'manifest';
+  link.href = url;
+  document.currentScript.parentNode.appendChild(link);
+})();
+
+// Register a minimal service worker so the PWA install criteria is fully met
+if('serviceWorker' in navigator){
+  const swCode = `
+    self.addEventListener('install', e => self.skipWaiting());
+    self.addEventListener('activate', e => clients.claim());
+    self.addEventListener('fetch', e => e.respondWith(fetch(e.request).catch(() => caches.match(e.request))));
+  `;
+  const swBlob = new Blob([swCode], {type:'application/javascript'});
+  const swUrl = URL.createObjectURL(swBlob);
+  navigator.serviceWorker.register(swUrl, {scope: '/'}).catch(()=>{});
+}
+</script>
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400&family=Jost:wght@300;400;500&display=swap" rel="stylesheet"/>
+<style>
+  *{box-sizing:border-box;-webkit-tap-highlight-color:transparent;margin:0;padding:0;}
+  body{font-family:'Jost',sans-serif;background:#faf6ff;overflow-x:hidden;min-height:100vh;}
+  :root{
+    --purple:#c4aaff;--yellow:#e8d57a;--green:#92c99a;--pink:#e8a0c4;
+    --blue:#90b8f0;--red:#f0a0a0;--teal:#7dcece;--lilac:#b89be0;
+    --text:#3a2a5a;--muted:#b0a0cc;--serif:'Cormorant Garamond',serif;
+  }
+  input,textarea,button{font-family:'Jost',sans-serif;outline:none;}
+  textarea{resize:vertical;}
+  .screen{display:none;min-height:100vh;flex-direction:column;}
+  .screen.active{display:flex;}
+  .page-bg{background:linear-gradient(160deg,#faf6ff 0%,#fdf9e8 100%);flex:1;overflow-y:auto;padding-bottom:50px;}
+  .topbar{background:rgba(255,255,255,0.75);backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px);padding:16px 18px;display:flex;align-items:center;gap:14px;border-bottom:1px solid rgba(196,170,255,0.18);position:sticky;top:0;z-index:10;}
+  .back-btn{background:rgba(255,255,255,0.85);border:1px solid rgba(196,170,255,0.4);border-radius:12px;width:36px;height:36px;cursor:pointer;font-size:15px;display:flex;align-items:center;justify-content:center;color:#5a3a8a;flex-shrink:0;}
+  .topbar-title{font-size:11px;color:#b0a0cc;letter-spacing:2px;text-transform:uppercase;font-weight:300;}
+  .content{padding:20px 18px;}
+  .inp{width:100%;padding:12px 14px;border-radius:14px;border:1px solid rgba(196,170,255,0.4);background:rgba(255,255,255,0.78);font-size:13px;color:#3a2a5a;margin-bottom:10px;letter-spacing:0.2px;font-weight:300;}
+  .btn{width:100%;padding:13px 0;border-radius:14px;border:1px solid rgba(196,170,255,0.5);background:rgba(196,170,255,0.14);color:#3a1a6a;font-size:12px;cursor:pointer;letter-spacing:1.5px;text-transform:uppercase;font-weight:400;margin-bottom:12px;transition:all 0.2s;}
+  .btn:hover{background:rgba(196,170,255,0.25);}
+  .card{border:1px solid rgba(196,170,255,0.4);border-radius:18px;padding:14px;margin-bottom:10px;background:#f8f4ff;}
+  .empty{text-align:center;color:#c0b0d8;font-size:13px;margin-top:36px;font-style:italic;font-family:var(--serif);letter-spacing:0.3px;}
+  .sec-label{font-size:10px;color:var(--muted);letter-spacing:2px;text-transform:uppercase;font-weight:300;margin-bottom:10px;}
+  @keyframes float{0%,100%{transform:translateY(0)}50%{transform:translateY(-14px)}}
+  @keyframes fadeUp{from{opacity:0;transform:translateY(18px)}to{opacity:1;transform:translateY(0)}}
+  @keyframes glowPulse{0%,100%{box-shadow:0 0 40px rgba(196,170,255,0.28)}50%{box-shadow:0 0 70px rgba(196,170,255,0.5),0 0 100px rgba(255,224,130,0.15)}}
+  @keyframes shimmer{0%{background-position:0% 50%}100%{background-position:200% 50%}}
+  .nav-card{border-radius:22px;padding:22px 16px;display:flex;flex-direction:column;align-items:flex-start;gap:6px;cursor:pointer;border:1px solid rgba(196,170,255,0.3);transition:all 0.2s ease;box-shadow:0 2px 12px rgba(180,140,255,0.05);}
+  .nav-card:active{transform:scale(0.97);}
+</style>
+</head>
+<body>
+
+<!-- SPLASH -->
+<div id="splash" class="screen active" style="min-height:100vh;display:flex;flex-direction:column;align-items:center;justify-content:center;background:linear-gradient(160deg,#faf6ff 0%,#f0e8ff 55%,#fdf9e8 100%);position:relative;overflow:hidden;">
+  <svg style="position:absolute;top:45px;left:22px;opacity:0.15;animation:float 7s ease-in-out infinite" width="75" height="97" viewBox="0 0 60 78"><ellipse cx="30" cy="28" rx="26" ry="22" fill="#c4aaff"/><ellipse cx="30" cy="26" rx="18" ry="14" fill="#d9c6ff"/><ellipse cx="22" cy="22" rx="5" ry="3" fill="#efe8ff" opacity=".7"/><path d="M18 48 Q15 58 19 68 Q21 74 18 78" stroke="#c4aaff" stroke-width="1.5" stroke-linecap="round" fill="none" opacity=".6"/><path d="M24 48 Q22 58 25 68 Q27 74 24 78" stroke="#c4aaff" stroke-width="1.5" stroke-linecap="round" fill="none" opacity=".6"/><path d="M30 48 Q28 58 31 68 Q33 74 30 78" stroke="#c4aaff" stroke-width="1.5" stroke-linecap="round" fill="none" opacity=".6"/><path d="M36 48 Q35 58 37 68 Q39 74 36 78" stroke="#c4aaff" stroke-width="1.5" stroke-linecap="round" fill="none" opacity=".6"/><path d="M42 48 Q42 58 43 68 Q45 74 42 78" stroke="#c4aaff" stroke-width="1.5" stroke-linecap="round" fill="none" opacity=".6"/><path d="M12 42 Q16 55 13 65" stroke="#dcc8ff" stroke-width="1.2" stroke-linecap="round" fill="none" opacity=".4"/><path d="M48 42 Q44 55 47 65" stroke="#dcc8ff" stroke-width="1.2" stroke-linecap="round" fill="none" opacity=".4"/></svg>
+  <svg style="position:absolute;bottom:85px;right:16px;opacity:0.13;animation:float 9s ease-in-out infinite 1.5s" width="55" height="71" viewBox="0 0 60 78"><ellipse cx="30" cy="28" rx="26" ry="22" fill="#c4aaff"/><ellipse cx="30" cy="26" rx="18" ry="14" fill="#d9c6ff"/><path d="M18 48 Q15 58 19 68" stroke="#c4aaff" stroke-width="1.5" stroke-linecap="round" fill="none" opacity=".6"/><path d="M30 48 Q28 58 31 68" stroke="#c4aaff" stroke-width="1.5" stroke-linecap="round" fill="none" opacity=".6"/><path d="M42 48 Q42 58 43 68" stroke="#c4aaff" stroke-width="1.5" stroke-linecap="round" fill="none" opacity=".6"/></svg>
+  <svg style="position:absolute;bottom:190px;left:42px;opacity:0.12;animation:float 10s ease-in-out infinite 0.8s" width="46" height="60" viewBox="0 0 60 78"><ellipse cx="30" cy="28" rx="26" ry="22" fill="#c4aaff"/><ellipse cx="30" cy="26" rx="18" ry="14" fill="#d9c6ff"/><path d="M18 48 Q15 58 19 68" stroke="#c4aaff" stroke-width="1.5" stroke-linecap="round" fill="none" opacity=".6"/><path d="M30 48 Q28 58 31 68" stroke="#c4aaff" stroke-width="1.5" stroke-linecap="round" fill="none" opacity=".6"/><path d="M42 48 Q42 58 43 68" stroke="#c4aaff" stroke-width="1.5" stroke-linecap="round" fill="none" opacity=".6"/></svg>
+
+  <div id="splash-inner" style="display:flex;flex-direction:column;align-items:center;gap:30px;opacity:0;transform:translateY(36px);transition:all 1.1s cubic-bezier(0.22,1,0.36,1);">
+    <div onclick="goHome()" style="width:148px;height:148px;border-radius:50%;background:linear-gradient(135deg,#cebcff 0%,#b8a5f5 40%,#f0d87a 100%);display:flex;align-items:center;justify-content:center;cursor:pointer;animation:glowPulse 4s ease-in-out infinite;border:2px solid rgba(255,255,255,0.6);box-shadow:0 8px 40px rgba(196,170,255,0.25);">
+      <span style="font-size:60px;">🪼</span>
+    </div>
+    <div style="text-align:center;">
+      <div style="font-size:46px;font-weight:300;letter-spacing:2px;font-family:var(--serif);background:linear-gradient(135deg,#8b62cc,#c9a227,#a07de0);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-size:200% auto;animation:shimmer 5s linear infinite;">Vee's World</div>
+      <div style="font-size:11px;color:#a892cc;margin-top:8px;letter-spacing:4px;font-weight:300;text-transform:uppercase;">your private universe</div>
+    </div>
+    <button onclick="goHome()" style="padding:13px 44px;border-radius:50px;border:1.5px solid rgba(196,170,255,0.45);background:rgba(255,255,255,0.6);backdrop-filter:blur(12px);color:#7a52b8;font-size:13px;cursor:pointer;letter-spacing:2px;text-transform:uppercase;font-weight:400;">Enter ✦</button>
+    <!-- Install instructions button -->
+    <button onclick="showInstall()" style="background:none;border:none;color:#b0a0cc;font-size:12px;cursor:pointer;letter-spacing:1px;text-decoration:underline;font-family:'Jost',sans-serif;font-weight:300;">Add to Home Screen?</button>
+  </div>
+</div>
+
+<!-- INSTALL GUIDE -->
+<div id="install-screen" class="screen" style="background:linear-gradient(160deg,#faf6ff,#fdf9e8);min-height:100vh;">
+  <div class="topbar"><button class="back-btn" onclick="showSplash()">←</button><span class="topbar-title">✦ &nbsp;Add to Home Screen</span></div>
+  <div class="content">
+    <div style="font-size:28px;font-weight:300;color:#5a3a8a;font-family:var(--serif);margin-bottom:6px;">Make it yours.</div>
+    <div style="font-size:13px;color:#9a7ec0;font-weight:300;margin-bottom:28px;line-height:1.7;">Follow the steps below to add Vee's World to your home screen so it opens like a real app.</div>
+
+    <!-- iOS -->
+    <div style="background:rgba(196,170,255,0.1);border:1px solid rgba(196,170,255,0.3);border-radius:20px;padding:20px;margin-bottom:16px;">
+      <div style="font-size:15px;color:#5a3a8a;font-family:var(--serif);margin-bottom:14px;">🍎 iPhone / Safari</div>
+      <div style="display:flex;flex-direction:column;gap:14px;">
+        <div style="display:flex;gap:14px;align-items:flex-start;">
+          <div style="width:28px;height:28px;border-radius:50%;background:rgba(196,170,255,0.35);display:flex;align-items:center;justify-content:center;font-size:12px;color:#5a3a8a;font-weight:500;flex-shrink:0;">1</div>
+          <div style="font-size:13px;color:#4a3060;font-weight:300;line-height:1.6;">Open this page in <strong>Safari</strong> (not Chrome). If you're in another browser, copy the link and paste it in Safari.</div>
+        </div>
+        <div style="display:flex;gap:14px;align-items:flex-start;">
+          <div style="width:28px;height:28px;border-radius:50%;background:rgba(196,170,255,0.35);display:flex;align-items:center;justify-content:center;font-size:12px;color:#5a3a8a;font-weight:500;flex-shrink:0;">2</div>
+          <div style="font-size:13px;color:#4a3060;font-weight:300;line-height:1.6;">Tap the <strong>Share</strong> button — the box with an arrow pointing up ↑ — at the bottom of Safari.</div>
+        </div>
+        <div style="display:flex;gap:14px;align-items:flex-start;">
+          <div style="width:28px;height:28px;border-radius:50%;background:rgba(196,170,255,0.35);display:flex;align-items:center;justify-content:center;font-size:12px;color:#5a3a8a;font-weight:500;flex-shrink:0;">3</div>
+          <div style="font-size:13px;color:#4a3060;font-weight:300;line-height:1.6;">Scroll down and tap <strong>"Add to Home Screen"</strong>.</div>
+        </div>
+        <div style="display:flex;gap:14px;align-items:flex-start;">
+          <div style="width:28px;height:28px;border-radius:50%;background:rgba(196,170,255,0.35);display:flex;align-items:center;justify-content:center;font-size:12px;color:#5a3a8a;font-weight:500;flex-shrink:0;">4</div>
+          <div style="font-size:13px;color:#4a3060;font-weight:300;line-height:1.6;">Name it <strong>Vee's World</strong> and tap <strong>Add</strong>. Done — the 🪼 icon will appear on your home screen!</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Android -->
+    <div style="background:rgba(144,184,240,0.1);border:1px solid rgba(144,184,240,0.3);border-radius:20px;padding:20px;margin-bottom:16px;">
+      <div style="font-size:15px;color:#2a4a7a;font-family:var(--serif);margin-bottom:14px;">🤖 Android / Chrome</div>
+      <div style="display:flex;flex-direction:column;gap:14px;">
+        <div style="display:flex;gap:14px;align-items:flex-start;">
+          <div style="width:28px;height:28px;border-radius:50%;background:rgba(144,184,240,0.3);display:flex;align-items:center;justify-content:center;font-size:12px;color:#2a4a7a;font-weight:500;flex-shrink:0;">1</div>
+          <div style="font-size:13px;color:#2a3a60;font-weight:300;line-height:1.6;">Open this page in <strong>Chrome</strong>.</div>
+        </div>
+        <div style="display:flex;gap:14px;align-items:flex-start;">
+          <div style="width:28px;height:28px;border-radius:50%;background:rgba(144,184,240,0.3);display:flex;align-items:center;justify-content:center;font-size:12px;color:#2a4a7a;font-weight:500;flex-shrink:0;">2</div>
+          <div style="font-size:13px;color:#2a3a60;font-weight:300;line-height:1.6;">Tap the <strong>three dots ⋮</strong> menu in the top right corner.</div>
+        </div>
+        <div style="display:flex;gap:14px;align-items:flex-start;">
+          <div style="width:28px;height:28px;border-radius:50%;background:rgba(144,184,240,0.3);display:flex;align-items:center;justify-content:center;font-size:12px;color:#2a4a7a;font-weight:500;flex-shrink:0;">3</div>
+          <div style="font-size:13px;color:#2a3a60;font-weight:300;line-height:1.6;">Tap <strong>"Add to Home Screen"</strong> or <strong>"Install App"</strong>.</div>
+        </div>
+        <div style="display:flex;gap:14px;align-items:flex-start;">
+          <div style="width:28px;height:28px;border-radius:50%;background:rgba(144,184,240,0.3);display:flex;align-items:center;justify-content:center;font-size:12px;color:#2a4a7a;font-weight:500;flex-shrink:0;">4</div>
+          <div style="font-size:13px;color:#2a3a60;font-weight:300;line-height:1.6;">Confirm and the 🪼 icon will be on your home screen!</div>
+        </div>
+      </div>
+    </div>
+
+    <div style="background:rgba(232,213,122,0.12);border:1px solid rgba(232,213,122,0.4);border-radius:16px;padding:16px;font-size:12px;color:#5a4a00;font-weight:300;line-height:1.7;letter-spacing:0.2px;">
+      ✦ &nbsp;Note: To use the app offline you'll need to save this HTML file locally and open it from there, or host it free on <strong>Netlify</strong> or <strong>GitHub Pages</strong>.
+    </div>
+  </div>
+</div>
+
+<!-- HOME -->
+<div id="home" class="screen">
+  <div class="page-bg">
+    <div id="home-header" style="padding:32px 22px 20px;position:relative;overflow:hidden;border-bottom:1px solid rgba(196,170,255,0.15);background:rgba(255,255,255,0.5);backdrop-filter:blur(16px);">
+      <svg style="position:absolute;right:10px;top:-5px;opacity:0.18;animation:float 6s ease-in-out infinite" width="78" height="101" viewBox="0 0 60 78"><ellipse cx="30" cy="28" rx="26" ry="22" fill="#c4aaff"/><ellipse cx="30" cy="26" rx="18" ry="14" fill="#d9c6ff"/><ellipse cx="22" cy="22" rx="5" ry="3" fill="#efe8ff" opacity=".7"/><path d="M18 48 Q15 58 19 68 Q21 74 18 78" stroke="#c4aaff" stroke-width="1.5" stroke-linecap="round" fill="none" opacity=".6"/><path d="M30 48 Q28 58 31 68 Q33 74 30 78" stroke="#c4aaff" stroke-width="1.5" stroke-linecap="round" fill="none" opacity=".6"/><path d="M42 48 Q42 58 43 68 Q45 74 42 78" stroke="#c4aaff" stroke-width="1.5" stroke-linecap="round" fill="none" opacity=".6"/></svg>
+      <div id="home-date" style="font-size:11px;color:#b0a0cc;letter-spacing:2px;text-transform:uppercase;font-weight:300;margin-bottom:6px;"></div>
+      <div id="home-greeting" style="font-size:27px;font-weight:300;color:#5a3a8a;font-family:var(--serif);letter-spacing:0.5px;"></div>
+      <div id="mood-display" style="margin-top:6px;font-size:13px;color:#9a7ec0;font-weight:300;display:none;"></div>
+      <div id="home-quote" style="margin-top:14px;padding:12px 16px;border-radius:14px;background:rgba(196,170,255,0.12);font-size:13px;color:#7a5aaa;font-style:italic;border-left:2px solid #c4aaff;font-family:var(--serif);line-height:1.6;letter-spacing:0.3px;"></div>
+    </div>
+    <div style="padding:20px 16px;display:grid;grid-template-columns:1fr 1fr;gap:12px;" id="nav-grid"></div>
+  </div>
+</div>
+
+<!-- JOURNAL -->
+<div id="journal" class="screen">
+  <div class="page-bg">
+    <div class="topbar"><button class="back-btn" onclick="goHome()">←</button><span class="topbar-title">📓 &nbsp;Journal</span></div>
+    <div class="content">
+      <input class="inp" id="j-title" placeholder="Entry title..."/>
+      <textarea class="inp" id="j-text" rows="5" placeholder="Write freely. This is your space."></textarea>
+      <button class="btn" onclick="saveJournal()">Save</button>
+      <div id="j-list"></div>
+    </div>
+  </div>
+</div>
+
+<!-- TO-DO -->
+<div id="todo" class="screen">
+  <div class="page-bg">
+    <div class="topbar"><button class="back-btn" onclick="goHome()">←</button><span class="topbar-title">✦ &nbsp;To-Do</span></div>
+    <div class="content">
+
+      <!-- Date strip -->
+      <div id="todo-date" style="font-size:11px;color:#b0a0cc;letter-spacing:2px;text-transform:uppercase;font-weight:300;margin-bottom:18px;"></div>
+
+      <!-- Progress bar -->
+      <div style="display:flex;align-items:center;gap:10px;margin-bottom:20px;">
+        <div style="flex:1;height:4px;background:#f0e8c0;border-radius:4px;overflow:hidden;">
+          <div id="todo-bar" style="height:100%;background:linear-gradient(90deg,#e8d57a,#c9a227);border-radius:4px;transition:width 0.4s ease;width:0%;"></div>
+        </div>
+        <div id="todo-progress" style="font-size:11px;color:#b0a0cc;font-weight:300;letter-spacing:1px;white-space:nowrap;"></div>
+      </div>
+
+      <!-- Fixed daily tasks -->
+      <div class="sec-label">Daily Checklist</div>
+      <div id="fixed-todo-list"></div>
+
+      <!-- Divider -->
+      <div style="border-top:1px dashed rgba(232,213,122,0.4);margin:18px 0;"></div>
+
+      <!-- Extra tasks for the day -->
+      <div class="sec-label">Today's Extras</div>
+      <div style="display:flex;gap:8px;margin-bottom:12px;">
+        <input class="inp" id="todo-inp" placeholder="Add a task for today..." style="flex:1;margin-bottom:0;" onkeydown="if(event.key==='Enter')addTodo()"/>
+        <button onclick="addTodo()" style="padding:0 18px;border-radius:14px;border:1px solid rgba(232,213,122,0.6);background:rgba(232,213,122,0.18);color:#5a4500;font-size:18px;cursor:pointer;">+</button>
+      </div>
+      <div id="todo-list"></div>
+
+    </div>
+  </div>
+</div>
+
+<!-- HABITS -->
+<div id="habits" class="screen">
+  <div class="page-bg">
+    <div class="topbar"><button class="back-btn" onclick="goHome()">←</button><span class="topbar-title">🌿 &nbsp;Habits</span></div>
+    <div class="content">
+      <div style="text-align:center;margin-bottom:20px;">
+        <div id="habit-count" style="font-size:36px;font-weight:300;color:#2e6b36;font-family:var(--serif);"></div>
+        <div style="font-size:11px;color:#92c99a;letter-spacing:2px;text-transform:uppercase;font-weight:300;margin-bottom:10px;">completed today</div>
+        <div style="height:4px;background:#d4edd6;border-radius:4px;overflow:hidden;"><div id="habit-bar" style="height:100%;background:linear-gradient(90deg,#92c99a,#4CAF50);border-radius:4px;transition:width 0.4s ease;width:0%"></div></div>
+      </div>
+      <div id="habit-list"></div>
+      <div style="display:flex;gap:8px;margin-top:10px;">
+        <input class="inp" id="habit-inp" placeholder="Add a habit..." style="flex:1;margin-bottom:0;" onkeydown="if(event.key==='Enter')addHabit()"/>
+        <button onclick="addHabit()" style="padding:0 18px;border-radius:14px;border:1px solid rgba(146,201,154,0.6);background:rgba(146,201,154,0.18);color:#1B5E20;font-size:18px;cursor:pointer;">+</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- MOOD -->
+<div id="mood" class="screen">
+  <div class="page-bg">
+    <div class="topbar"><button class="back-btn" onclick="goHome()">←</button><span class="topbar-title">🫧 &nbsp;Mood</span></div>
+    <div class="content">
+      <div style="text-align:center;margin-bottom:18px;font-size:13px;color:#8a4a70;font-family:var(--serif);font-style:italic;letter-spacing:0.5px;">How are you, truly?</div>
+      <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:18px;" id="mood-grid"></div>
+      <div id="mood-note-area" style="display:none;">
+        <textarea class="inp" id="mood-note" rows="2" placeholder="Any thoughts? (optional)"></textarea>
+        <button class="btn" id="mood-save-btn" onclick="saveMood()" style="border-color:rgba(232,160,196,0.5);background:rgba(232,160,196,0.14);color:#6a1a40;"></button>
+      </div>
+      <div id="mood-log"></div>
+    </div>
+  </div>
+</div>
+
+<!-- QUOTES -->
+<div id="quotes" class="screen">
+  <div class="page-bg">
+    <div class="topbar"><button class="back-btn" onclick="goHome()">←</button><span class="topbar-title">✦ &nbsp;Inspiration</span></div>
+    <div class="content">
+      <div style="text-align:center;margin-bottom:28px;">
+        <div id="quote-display" style="padding:28px 20px;border-radius:22px;background:linear-gradient(135deg,rgba(196,170,255,0.12),rgba(144,184,240,0.12));border:1px solid rgba(144,184,240,0.3);font-size:18px;color:#3a5a8a;font-style:italic;line-height:1.8;font-family:var(--serif);letter-spacing:0.3px;margin-bottom:16px;"></div>
+        <button onclick="nextQuote()" style="padding:10px 28px;border-radius:50px;border:1px solid rgba(144,184,240,0.5);background:transparent;color:#3a5a8a;font-size:12px;cursor:pointer;letter-spacing:1.5px;text-transform:uppercase;">Next ✦</button>
+      </div>
+      <div style="border-top:1px solid rgba(144,184,240,0.2);padding-top:18px;">
+        <div class="sec-label">Your Words</div>
+        <textarea class="inp" id="my-quote-inp" rows="2" placeholder="A quote that moves you..."></textarea>
+        <button class="btn" onclick="addMyQuote()" style="border-color:rgba(144,184,240,0.5);background:rgba(144,184,240,0.12);color:#1a3a6a;">Add Quote</button>
+        <div id="my-quotes-list"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- NOTES -->
+<div id="notes" class="screen">
+  <div class="page-bg">
+    <div class="topbar"><button class="back-btn" onclick="goHome()">←</button><span class="topbar-title">🗒️ &nbsp;Notes</span></div>
+    <div class="content">
+      <div style="display:flex;gap:8px;margin-bottom:12px;" id="tag-bar"></div>
+      <textarea class="inp" id="note-inp" rows="3" placeholder="Quick thought, idea, or reminder..."></textarea>
+      <button class="btn" onclick="addNote()" style="border-color:rgba(240,160,160,0.5);background:rgba(240,160,160,0.12);color:#7a1a1a;">Save</button>
+      <div id="notes-list"></div>
+    </div>
+  </div>
+</div>
+
+<!-- VISION -->
+<div id="vision" class="screen">
+  <div class="page-bg">
+    <div class="topbar"><button class="back-btn" onclick="goHome()">←</button><span class="topbar-title">🌟 &nbsp;Vision Board</span></div>
+    <div class="content">
+      <div style="text-align:center;margin-bottom:18px;font-size:13px;color:#6a3a9a;font-family:var(--serif);font-style:italic;letter-spacing:0.5px;">Dream it. Claim it. Build it.</div>
+      <div style="display:flex;flex-wrap:wrap;gap:6px;margin-bottom:12px;" id="vision-emoji-bar"></div>
+      <div style="display:flex;gap:8px;margin-bottom:10px;">
+        <input class="inp" id="vision-inp" placeholder="Write your dream or goal..." style="flex:1;margin-bottom:0;" onkeydown="if(event.key==='Enter')addGoal()"/>
+        <button onclick="addGoal()" style="padding:0 18px;border-radius:14px;border:1px solid rgba(184,155,224,0.6);background:rgba(184,155,224,0.18);color:#3a0a6a;font-size:18px;cursor:pointer;">+</button>
+      </div>
+      <div style="margin-bottom:16px;">
+        <input type="file" id="vision-img-inp" accept="image/*" style="display:none;" onchange="previewImg(event)"/>
+        <button onclick="document.getElementById('vision-img-inp').click()" style="width:100%;padding:12px 0;border-radius:14px;border:1.5px dashed rgba(184,155,224,0.5);background:rgba(184,155,224,0.07);color:#7a4aaa;font-size:13px;cursor:pointer;font-weight:300;letter-spacing:1px;display:flex;align-items:center;justify-content:center;gap:8px;">🖼️ Attach a photo to next goal</button>
+        <div id="img-preview" style="margin-top:10px;display:none;border-radius:14px;overflow:hidden;border:1px solid rgba(184,155,224,0.4);position:relative;">
+          <img id="img-preview-src" style="width:100%;height:120px;object-fit:cover;display:block;"/>
+          <button onclick="clearImg()" style="position:absolute;top:8px;right:8px;background:rgba(0,0,0,0.4);border:none;color:white;border-radius:8px;padding:3px 10px;cursor:pointer;font-size:12px;">✕</button>
+        </div>
+      </div>
+      <div id="vision-list"></div>
+    </div>
+  </div>
+</div>
+
+<!-- MY SPACE -->
+<div id="free" class="screen">
+  <div class="page-bg">
+    <div class="topbar"><button class="back-btn" onclick="goHome()">←</button><span class="topbar-title">🪼 &nbsp;My Space</span></div>
+    <div class="content">
+      <div style="text-align:center;margin-bottom:14px;font-size:13px;color:#2a7a7a;font-family:var(--serif);font-style:italic;letter-spacing:0.5px;">No rules. No audience. Just you.</div>
+      <textarea class="inp" id="free-inp" rows="7" placeholder="Rant, dream, reflect, ramble — whatever you need."></textarea>
+      <button class="btn" onclick="saveFree()" style="border-color:rgba(125,206,206,0.5);background:rgba(125,206,206,0.12);color:#004a4a;">Save</button>
+      <div id="free-list"></div>
+    </div>
+  </div>
+</div>
+
+<script>
+const QUOTES=["You are doing better than you think, Vee.","Small steps every day lead to big dreams.","Be gentle with yourself — you are still growing.","Your presence is your power.","Rest is not a reward. It is a right.","You didn't come this far to only come this far.","Every day is a fresh page. Write it well.","Discipline is just loving your future self.","Soft on the outside, unshakeable on the inside.","You are always becoming. Trust the process."];
+const MOODS=[{emoji:"🌞",label:"Radiant",color:"#FFF8DC"},{emoji:"😊",label:"Content",color:"#D4EDDA"},{emoji:"😌",label:"Peaceful",color:"#D6EAF8"},{emoji:"🌧️",label:"Low",color:"#E8E8E8"},{emoji:"😔",label:"Melancholy",color:"#E8D5F5"},{emoji:"😤",label:"Drained",color:"#FFE0D0"},{emoji:"🤩",label:"Thriving",color:"#FEFBD8"},{emoji:"🫶🏼",label:"Grateful",color:"#F5D5E0"}];
+const TAGS=["💭","💡","🌿","⚡","🎯","🫶🏼"];
+const VISION_EMOJIS=["🌟","🫶🏼","🎯","🌸","✈️","💰","🏆","📚","🌿","💫","🎓","🏠"];
+const NAV=[{id:"journal",emoji:"📓",label:"Journal",sub:"reflect & release",bg:"#f0eaff",border:"rgba(196,170,255,0.5)"},{id:"todo",emoji:"✦",label:"To-Do",sub:"get it done",bg:"#fffceb",border:"rgba(232,213,122,0.5)"},{id:"habits",emoji:"🌿",label:"Habits",sub:"daily rituals",bg:"#edf7ee",border:"rgba(146,201,154,0.5)"},{id:"mood",emoji:"🫧",label:"Mood",sub:"how are you?",bg:"#fff0f8",border:"rgba(232,160,196,0.5)"},{id:"quotes",emoji:"✦",label:"Inspiration",sub:"words that move",bg:"#eef5ff",border:"rgba(144,184,240,0.5)"},{id:"notes",emoji:"🗒️",label:"Notes",sub:"quick thoughts",bg:"#fff4f4",border:"rgba(240,160,160,0.5)"},{id:"vision",emoji:"🌟",label:"Vision",sub:"dream big",bg:"#f5eeff",border:"rgba(184,155,224,0.5)"},{id:"free",emoji:"🪼",label:"My Space",sub:"just for you",bg:"#edfafa",border:"rgba(125,206,206,0.5)"}];
+
+let state={journals:[],todos:[],fixedStatus:{},fixedStatusDate:null,habits:[{id:1,name:"Morning water",done:false},{id:2,name:"Movement / exercise",done:false},{id:3,name:"Read something meaningful",done:false},{id:4,name:"Skincare routine",done:false},{id:5,name:"Homeopathic remedy",done:false},{id:6,name:"No screen 1hr before sleep",done:false}],moodLog:[],myQuotes:[],notes:[],goals:[{id:1,text:"Complete DMLT with distinction",emoji:"🎓",done:false,img:null},{id:2,text:"Stay consistent with my wellness",emoji:"🌿",done:false,img:null},{id:3,text:"Be genuinely kind to myself",emoji:"🫶🏼",done:false,img:null}],freeNotes:[],todayMood:null,quoteIdx:Math.floor(Math.random()*QUOTES.length),selectedMood:null,selectedTag:"💭",selectedVisionEmoji:"🌟",pendingImg:null};
+
+function show(id){document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));document.getElementById(id).classList.add('active');window.scrollTo(0,0);}
+function showSplash(){show('splash');}
+function showInstall(){show('install-screen');}
+function goHome(){renderHome();show('home');}
+
+window.onload=()=>{
+  setTimeout(()=>{const el=document.getElementById('splash-inner');el.style.opacity='1';el.style.transform='translateY(0)';},120);
+  buildMoodGrid();buildTagBar();buildVisionEmojiBar();buildNavGrid();
+  document.getElementById('quote-display').textContent='"'+QUOTES[state.quoteIdx]+'"';
+};
+
+function renderHome(){
+  const now=new Date();
+  document.getElementById('home-date').textContent=now.toLocaleDateString('en-IN',{weekday:'long',day:'numeric',month:'long',year:'numeric'});
+  const h=now.getHours();
+  const g=h<12?'Good morning':h<17?'Good afternoon':h<21?'Good evening':'Good night';
+  document.getElementById('home-greeting').textContent=g+', Vee 🪼';
+  document.getElementById('home-quote').textContent='"'+QUOTES[state.quoteIdx]+'"';
+  if(state.todayMood){const m=document.getElementById('mood-display');m.textContent='Feeling '+state.todayMood.emoji+' '+state.todayMood.label+' today';m.style.display='block';}
+}
+
+function buildNavGrid(){
+  const g=document.getElementById('nav-grid');g.innerHTML='';
+  NAV.forEach((n,i)=>{
+    const d=document.createElement('div');
+    d.className='nav-card';
+    d.style.cssText=`background:${n.bg};border:1px solid ${n.border};animation:fadeUp 0.5s ease ${i*0.06}s both;`;
+    d.innerHTML=`<div style="font-size:24px;">${n.emoji}</div><div style="font-size:15px;color:#4a2e78;font-family:var(--serif);letter-spacing:0.3px;">${n.label}</div><div style="font-size:10px;color:#9a88b8;font-weight:300;letter-spacing:1px;text-transform:uppercase;">${n.sub}</div>`;
+    d.onclick=()=>{show(n.id);if(n.id==='habits')renderHabits();if(n.id==='todo')renderTodos();if(n.id==='journal')renderJournals();if(n.id==='mood')renderMoodLog();if(n.id==='notes')renderNotes();if(n.id==='vision')renderGoals();if(n.id==='free')renderFree();if(n.id==='quotes')renderMyQuotes();};
+    g.appendChild(d);
+  });
+}
+
+// Journal
+function saveJournal(){const t=document.getElementById('j-title').value.trim(),x=document.getElementById('j-text').value.trim();if(!x)return;const now=new Date();state.journals.unshift({id:Date.now(),title:t||'Untitled entry',text:x,date:now.toLocaleDateString('en-IN',{day:'numeric',month:'long'}),time:now.toLocaleTimeString('en-IN',{hour:'2-digit',minute:'2-digit'})});document.getElementById('j-title').value='';document.getElementById('j-text').value='';renderJournals();}
+function renderJournals(){const l=document.getElementById('j-list');l.innerHTML='';if(!state.journals.length){l.innerHTML='<div class="empty">Your journal awaits your first entry.</div>';return;}state.journals.forEach(e=>{const d=document.createElement('div');d.className='card';d.style.cssText='background:#f8f4ff;border:1px solid rgba(196,170,255,0.4);margin-bottom:10px;';d.innerHTML=`<div style="display:flex;justify-content:space-between;margin-bottom:8px;"><span style="font-weight:400;color:#5a3a8a;font-size:15px;font-family:var(--serif);">${e.title}</span><span style="font-size:10px;color:#b0a0cc;letter-spacing:1px;">${e.date} · ${e.time}</span></div><div style="font-size:13px;color:#6b4fa0;line-height:1.8;white-space:pre-wrap;font-weight:300;">${e.text}</div>`;l.appendChild(d);});}
+
+// Todo
+const FIXED_TASKS=[{id:'f1',text:'Morning routine'},{id:'f2',text:'Exercise'},{id:'f3',text:'Study / work block'},{id:'f4',text:'Meals on time'},{id:'f5',text:'Evening wind-down'}];
+function getTodayKey(){const n=new Date();return n.getFullYear()+'-'+(n.getMonth()+1)+'-'+n.getDate();}
+function initTodoDay(){
+  const key=getTodayKey();
+  if(!state.fixedStatus||state.fixedStatusDate!==key){
+    state.fixedStatus={};
+    FIXED_TASKS.forEach(t=>{state.fixedStatus[t.id]=null;}); // null=unmarked, true=tick, false=cross
+    state.fixedStatusDate=key;
+    state.todos=[];
+  }
+}
+function markFixed(id,val){
+  // toggle: if already same value, reset to null
+  state.fixedStatus[id]=state.fixedStatus[id]===val?null:val;
+  renderTodos();
+}
+function addTodo(){const v=document.getElementById('todo-inp').value.trim();if(!v)return;state.todos.push({id:Date.now(),text:v,status:null});document.getElementById('todo-inp').value='';renderTodos();}
+function markTodo(id,val){state.todos=state.todos.map(t=>t.id===id?{...t,status:t.status===val?null:val}:t);renderTodos();}
+function removeTodo(id){state.todos=state.todos.filter(t=>t.id!==id);renderTodos();}
+function renderTodos(){
+  initTodoDay();
+  // Date
+  document.getElementById('todo-date').textContent=new Date().toLocaleDateString('en-IN',{weekday:'long',day:'numeric',month:'long'});
+  // Progress
+  const allItems=[...FIXED_TASKS.map(t=>state.fixedStatus[t.id]),...state.todos.map(t=>t.status)];
+  const done=allItems.filter(s=>s===true).length;
+  const total=allItems.length;
+  const pct=total?Math.round(done/total*100):0;
+  document.getElementById('todo-bar').style.width=pct+'%';
+  document.getElementById('todo-progress').textContent=done+'/'+total+' done';
+
+  // Fixed tasks
+  const fl=document.getElementById('fixed-todo-list');fl.innerHTML='';
+  FIXED_TASKS.forEach(t=>{
+    const s=state.fixedStatus[t.id];
+    const d=document.createElement('div');
+    d.style.cssText='display:flex;align-items:center;gap:12px;background:'+(s===true?'#fffbea':s===false?'#fff5f5':'#fffdf0')+';border:1px solid rgba(232,213,122,0.4);border-radius:16px;padding:13px 14px;margin-bottom:9px;';
+    d.innerHTML=`
+      <span style="flex:1;font-size:13px;color:#4a3800;font-weight:300;text-decoration:${s===true?'line-through':'none'};opacity:${s===false?0.45:1};">${t.text}</span>
+      <button onclick="markFixed('${t.id}',true)" title="Done" style="width:32px;height:32px;border-radius:50%;border:1.5px solid ${s===true?'#c9a227':'rgba(200,180,80,0.35)'};background:${s===true?'#c9a227':'transparent'};color:${s===true?'#fff':'#c9a227'};font-size:15px;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all 0.18s;flex-shrink:0;">✓</button>
+      <button onclick="markFixed('${t.id}',false)" title="Skip" style="width:32px;height:32px;border-radius:50%;border:1.5px solid ${s===false?'#e07070':'rgba(220,130,130,0.35)'};background:${s===false?'#e07070':'transparent'};color:${s===false?'#fff':'#e07070'};font-size:14px;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all 0.18s;flex-shrink:0;">✕</button>`;
+    fl.appendChild(d);
+  });
+
+  // Extra tasks
+  const l=document.getElementById('todo-list');l.innerHTML='';
+  if(!state.todos.length){l.innerHTML='<div class="empty" style="margin-top:16px;">Nothing extra today 🌸</div>';return;}
+  state.todos.forEach(t=>{
+    const s=t.status;
+    const d=document.createElement('div');
+    d.style.cssText='display:flex;align-items:center;gap:12px;background:'+(s===true?'#fffbea':s===false?'#fff5f5':'#fffdf0')+';border:1px solid rgba(232,213,122,0.35);border-radius:16px;padding:13px 14px;margin-bottom:9px;';
+    d.innerHTML=`
+      <span style="flex:1;font-size:13px;color:#4a3800;font-weight:300;text-decoration:${s===true?'line-through':'none'};opacity:${s===false?0.45:1};">${t.text}</span>
+      <button onclick="markTodo(${t.id},true)" title="Done" style="width:32px;height:32px;border-radius:50%;border:1.5px solid ${s===true?'#c9a227':'rgba(200,180,80,0.35)'};background:${s===true?'#c9a227':'transparent'};color:${s===true?'#fff':'#c9a227'};font-size:15px;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all 0.18s;flex-shrink:0;">✓</button>
+      <button onclick="markTodo(${t.id},false)" title="Skip" style="width:32px;height:32px;border-radius:50%;border:1.5px solid ${s===false?'#e07070':'rgba(220,130,130,0.35)'};background:${s===false?'#e07070':'transparent'};color:${s===false?'#fff':'#e07070'};font-size:14px;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all 0.18s;flex-shrink:0;">✕</button>
+      <button onclick="removeTodo(${t.id})" style="background:none;border:none;cursor:pointer;color:rgba(200,160,80,0.5);font-size:13px;padding:0 2px;flex-shrink:0;">🗑️</button>`;
+    l.appendChild(d);
+  });
+}
+
+// Habits
+function toggleHabit(id){state.habits=state.habits.map(h=>h.id===id?{...h,done:!h.done}:h);renderHabits();}
+function addHabit(){const v=document.getElementById('habit-inp').value.trim();if(!v)return;state.habits.push({id:Date.now(),name:v,done:false});document.getElementById('habit-inp').value='';renderHabits();}
+function renderHabits(){const done=state.habits.filter(h=>h.done).length;document.getElementById('habit-count').innerHTML=done+'<span style="font-size:18px;color:#92c99a;">/'+(state.habits.length)+'</span>';document.getElementById('habit-bar').style.width=state.habits.length?(done/state.habits.length*100)+'%':'0%';const l=document.getElementById('habit-list');l.innerHTML='';state.habits.forEach(h=>{const d=document.createElement('div');d.className='card';d.style.cssText=`background:${h.done?'#d8f0da':'#f4fbf4'};border:1px solid rgba(146,201,154,0.4);display:flex;align-items:center;gap:14px;cursor:pointer;margin-bottom:10px;`;d.innerHTML=`<div style="width:22px;height:22px;border-radius:50%;border:1.5px solid #92c99a;background:${h.done?'#4CAF50':'transparent'};display:flex;align-items:center;justify-content:center;color:white;font-size:12px;flex-shrink:0;">${h.done?'✓':''}</div><span style="font-size:13px;color:#2e5c34;font-weight:300;text-decoration:${h.done?'line-through':'none'};opacity:${h.done?0.5:1};">${h.name}</span>`;d.onclick=()=>toggleHabit(h.id);l.appendChild(d);});}
+
+// Mood
+function buildMoodGrid(){const g=document.getElementById('mood-grid');MOODS.forEach(m=>{const b=document.createElement('button');b.id='mood-'+m.label;b.style.cssText='background:rgba(255,255,255,0.6);border:1.5px solid #f0cce0;border-radius:18px;padding:12px 4px;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:5px;transition:all 0.2s;';b.innerHTML=`<div style="font-size:22px;">${m.emoji}</div><div style="font-size:9px;color:#8a4a70;font-weight:400;letter-spacing:0.5px;text-transform:uppercase;">${m.label}</div>`;b.onclick=()=>selectMood(m);g.appendChild(b);});}
+function selectMood(m){state.selectedMood=m;MOODS.forEach(x=>{const b=document.getElementById('mood-'+x.label);b.style.background=x.label===m.label?x.color:'rgba(255,255,255,0.6)';b.style.borderColor=x.label===m.label?'#e8a0c4':'#f0cce0';b.style.transform=x.label===m.label?'scale(1.06)':'scale(1)';});document.getElementById('mood-note-area').style.display='block';document.getElementById('mood-save-btn').textContent='Save — '+m.emoji+' '+m.label;}
+function saveMood(){if(!state.selectedMood)return;const now=new Date();state.moodLog.unshift({...state.selectedMood,note:document.getElementById('mood-note').value,date:now.toLocaleDateString('en-IN',{day:'numeric',month:'short'}),time:now.toLocaleTimeString('en-IN',{hour:'2-digit',minute:'2-digit'})});state.todayMood=state.selectedMood;state.selectedMood=null;document.getElementById('mood-note').value='';document.getElementById('mood-note-area').style.display='none';MOODS.forEach(x=>{const b=document.getElementById('mood-'+x.label);b.style.background='rgba(255,255,255,0.6)';b.style.borderColor='#f0cce0';b.style.transform='scale(1)';});renderMoodLog();}
+function renderMoodLog(){const l=document.getElementById('mood-log');if(!state.moodLog.length){l.innerHTML='';return;}let h='<div class="sec-label" style="margin-top:16px;">Mood History</div>';state.moodLog.forEach(m=>{h+=`<div class="card" style="background:#fff5fa;border:1px solid rgba(240,204,224,0.5);display:flex;align-items:center;gap:10px;margin-bottom:8px;"><span style="font-size:20px;">${m.emoji}</span><div style="flex:1;"><span style="font-size:13px;color:#6a1a40;font-weight:300;">${m.label}</span>${m.note?`<div style="font-size:12px;color:#b07090;font-style:italic;margin-top:2px;">${m.note}</div>`:''}</div><span style="font-size:10px;color:#d0a0b8;">${m.date}</span></div>`;});l.innerHTML=h;}
+
+// Quotes
+let qIdx=state.quoteIdx;
+function nextQuote(){qIdx=(qIdx+1)%QUOTES.length;document.getElementById('quote-display').textContent='"'+QUOTES[qIdx]+'"';}
+function addMyQuote(){const v=document.getElementById('my-quote-inp').value.trim();if(!v)return;state.myQuotes.push(v);document.getElementById('my-quote-inp').value='';renderMyQuotes();}
+function renderMyQuotes(){const l=document.getElementById('my-quotes-list');l.innerHTML='';state.myQuotes.forEach((q,i)=>{const d=document.createElement('div');d.className='card';d.style.cssText='background:#eef5ff;border:1px solid rgba(144,184,240,0.4);margin-top:10px;font-size:14px;font-style:italic;color:#2a4a7a;font-family:var(--serif);line-height:1.6;';d.textContent='"'+q+'"';l.appendChild(d);});}
+
+// Notes
+function buildTagBar(){const b=document.getElementById('tag-bar');TAGS.forEach(t=>{const btn=document.createElement('button');btn.id='tag-'+t;btn.style.cssText='font-size:18px;background:transparent;border:1.5px solid transparent;border-radius:10px;padding:5px 9px;cursor:pointer;transition:all 0.15s;';btn.textContent=t;btn.onclick=()=>selectTag(t);b.appendChild(btn);});selectTag('💭');}
+function selectTag(t){state.selectedTag=t;TAGS.forEach(x=>{const b=document.getElementById('tag-'+x);b.style.background=x===t?'#ffe8e8':'transparent';b.style.borderColor=x===t?'rgba(240,160,160,0.5)':'transparent';});}
+function addNote(){const v=document.getElementById('note-inp').value.trim();if(!v)return;state.notes.unshift({id:Date.now(),text:v,tag:state.selectedTag,date:new Date().toLocaleDateString('en-IN',{day:'numeric',month:'short'})});document.getElementById('note-inp').value='';renderNotes();}
+function renderNotes(){const l=document.getElementById('notes-list');l.innerHTML='';if(!state.notes.length){l.innerHTML='<div class="empty">Your thoughts deserve a home.</div>';return;}state.notes.forEach(n=>{const d=document.createElement('div');d.className='card';d.style.cssText='background:#fff8f8;border:1px solid rgba(240,160,160,0.4);margin-bottom:10px;';d.innerHTML=`<div style="display:flex;justify-content:space-between;margin-bottom:6px;"><span style="font-size:18px;">${n.tag}</span><span style="font-size:10px;color:#d08080;letter-spacing:1px;">${n.date}</span></div><div style="font-size:13px;color:#7a1a1a;line-height:1.7;white-space:pre-wrap;font-weight:300;">${n.text}</div>`;l.appendChild(d);});}
+
+// Vision
+function buildVisionEmojiBar(){const b=document.getElementById('vision-emoji-bar');VISION_EMOJIS.forEach(e=>{const btn=document.createElement('button');btn.id='ve-'+e;btn.style.cssText='font-size:18px;background:transparent;border:1.5px solid transparent;border-radius:10px;padding:4px 8px;cursor:pointer;transition:all 0.15s;';btn.textContent=e;btn.onclick=()=>selectVisionEmoji(e);b.appendChild(btn);});selectVisionEmoji('🌟');}
+function selectVisionEmoji(e){state.selectedVisionEmoji=e;VISION_EMOJIS.forEach(x=>{const b=document.getElementById('ve-'+x);if(b){b.style.background=x===e?'#ede0ff':'transparent';b.style.borderColor=x===e?'rgba(184,155,224,0.5)':'transparent';}});}
+function previewImg(ev){const f=ev.target.files[0];if(!f)return;const r=new FileReader();r.onload=e=>{state.pendingImg=e.target.result;document.getElementById('img-preview-src').src=e.target.result;document.getElementById('img-preview').style.display='block';};r.readAsDataURL(f);}
+function clearImg(){state.pendingImg=null;document.getElementById('img-preview').style.display='none';document.getElementById('vision-img-inp').value='';}
+function addGoal(){const v=document.getElementById('vision-inp').value.trim();if(!v)return;state.goals.push({id:Date.now(),text:v,emoji:state.selectedVisionEmoji,done:false,img:state.pendingImg});document.getElementById('vision-inp').value='';clearImg();renderGoals();}
+function toggleGoal(id){state.goals=state.goals.map(g=>g.id===id?{...g,done:!g.done}:g);renderGoals();}
+function removeGoal(id){state.goals=state.goals.filter(g=>g.id!==id);renderGoals();}
+function renderGoals(){const l=document.getElementById('vision-list');l.innerHTML='';state.goals.forEach(g=>{const d=document.createElement('div');d.className='card';d.style.cssText=`background:${g.done?'#e8d8ff':'#f8f2ff'};border:1px solid rgba(184,155,224,0.4);margin-bottom:12px;overflow:hidden;padding:0;`;let inner='';if(g.img)inner+=`<img src="${g.img}" style="width:100%;height:130px;object-fit:cover;display:block;border-radius:18px 18px 0 0;"/>`;inner+=`<div style="padding:14px;display:flex;align-items:center;gap:12px;"><div style="font-size:26px;cursor:pointer;" onclick="toggleGoal(${g.id})">${g.emoji}</div><span style="flex:1;font-size:14px;color:#3a1a6a;font-weight:300;text-decoration:${g.done?'line-through':'none'};opacity:${g.done?0.5:1};cursor:pointer;" onclick="toggleGoal(${g.id})">${g.text}</span><div style="display:flex;gap:8px;align-items:center;">${g.done?'<span style="font-size:16px;">✅</span>':''}<button onclick="removeGoal(${g.id})" style="background:none;border:none;cursor:pointer;color:#c4aaff;font-size:14px;">✕</button></div></div>`;d.innerHTML=inner;l.appendChild(d);});}
+
+// Free
+function saveFree(){const v=document.getElementById('free-inp').value.trim();if(!v)return;state.freeNotes.unshift({id:Date.now(),text:v,date:new Date().toLocaleDateString('en-IN',{day:'numeric',month:'long'})});document.getElementById('free-inp').value='';renderFree();}
+function renderFree(){const l=document.getElementById('free-list');l.innerHTML='';if(!state.freeNotes.length){l.innerHTML='<div class="empty">This space is entirely yours.</div>';return;}state.freeNotes.forEach(n=>{const d=document.createElement('div');d.className='card';d.style.cssText='background:#edfafa;border:1px solid rgba(125,206,206,0.4);margin-top:12px;font-size:13px;color:#1a5a5a;white-space:pre-wrap;line-height:1.8;font-weight:300;';d.innerHTML=`<div style="font-size:10px;color:#7dcece;margin-bottom:6px;letter-spacing:1.5px;text-transform:uppercase;">${n.date}</div>${n.text}`;l.appendChild(d);});}
+</script>
+</body>
+</html>
